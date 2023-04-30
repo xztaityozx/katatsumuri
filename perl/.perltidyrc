@@ -1,0 +1,18 @@
+-enc=utf8
+-ole=unix
+-i=2
+-l=120
+--check-syntax
+
+--closing-token-indentation=1
+--nooutdent-long-quotes
+--nooutdent-long-lines
+
+--nospace-for-semicolon
+--nospace-terminal-semicolon
+--add-semicolons
+
+--opening-brace-always-on-right
+
+# イコールを揃えない
+-vxl='='
