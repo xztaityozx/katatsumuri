@@ -4,7 +4,6 @@ use strictures 2;
 use Function::Return;
 use Function::Parameters;
 use Types::Standard -base;
-use Type::Tiny::Union;
 use Katatsumuri::Result;
 use Katatsumuri::Result::Property;
 use Katatsumuri::Result::Method;
