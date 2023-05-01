@@ -1,6 +1,6 @@
 -enc=utf8
 -ole=unix
--i=2
+-i=4
 -l=120
 --check-syntax
 
