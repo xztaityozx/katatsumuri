@@ -43,6 +43,7 @@ inc/
 /MYMETA.*
 *.o
 *.pm.tdy
+*.pm.ERR
 *.bs
 
 # Devel::Cover
