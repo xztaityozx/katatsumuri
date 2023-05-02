@@ -4,9 +4,9 @@ use strictures 2;
 use Function::Return;
 use Function::Parameters;
 use Types::Standard -base;
-use Katatsumuri::Result;
 use Katatsumuri::Result::Property;
 use Katatsumuri::Result::Method;
+use Katatsumuri::Inspector::Methods;
 use Mouse::Util;
 use Carp;
 use Mouse;
@@ -52,23 +52,6 @@ method _get_properties ($class :) : Return(ArrayRef[InstanceOf['Katatsumuri::Res
     }
 }
 
-method _get_methods ($class :) : Return(ArrayRef[InstanceOf['Katatsumuri::Result::Method']]) {
-    my $meta = Mouse::Util::get_metaclass_by_name($class->class_name);
-    if (defined($meta) && $meta->isa('Mouse::Meta::Class')) {
-        my @result;
-        for my $method_name ($meta->get_method_list) {
-            push @result, Katatsumuri::Result::Method->new(Name => $method_name);
-        }
-
-        return \@result;
-    }
-    else {
-        # こっちはMouseじゃなかったとき。まだ実装してない
-        carp('Property information enumeration is not supported for non-Mouse types');
-        return [];
-    }
-}
-
 method get_type_info ($class :) : Return(InstanceOf['Katatsumuri::Result']) {
     my @array_of_type_name = split(/::/x, $class->class_name);
     my $type_name = pop @array_of_type_name;
@@ -76,7 +59,7 @@ method get_type_info ($class :) : Return(InstanceOf['Katatsumuri::Result']) {
         Name         => $type_name,
         Namespace    => \@array_of_type_name,
         SuperClasses => $class->_get_superclasses(),
-        Methods      => $class->_get_methods(),
+        Methods      => Katatsumuri::Inspector::Methods->inspect($class->class_name),
         Properties   => $class->_get_properties()
     );
 }
