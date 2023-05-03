@@ -1,20 +1,42 @@
 package Katatsumuri::Result::Method::Argument;
-use Mouse;
-use Types::Standard      qw( Str HashRef );
-use Function::Parameters qw(method);
+use strictures 2;
+use Types::Standard      qw( Str HashRef Undef Bool );
 use Function::Return;
+use Function::Parameters qw(method override);
 
-has Name => (is => 'ro', isa => Str, required => 1);
-has Type => (is => 'ro', isa => Str, required => 1);
+use Mouse;
+use Katatsumuri::Result;
+extends 'Katatsumuri::Result';
+
+has name => (is => 'ro', isa => Str, required => 1);
+has type => (is => 'ro', isa => Str|HashRef, required => 1);
+has default => (is => 'ro', isa => Str|HashRef|Undef );
+has required => (is => 'ro', isa => Bool, required => 1 );
+
+override TO_JSON ($class :) : Return(HashRef) {
+    my $type = $class->type;
+    if(ref($type) eq 'HASH') {
+        if(exists($type->{type})) {
+            $type->{type} = $class->normalize_type_name($type->{type});
+        }
+    } else {
+        $type = $class->normalize_type_name($type);
+    }
+
+    my $hash = +{
+        Name => $class->name,
+        Type => $type,
+        Required => $class->required ? \1 : \0,
+    };
+    if(defined($class->default)) {
+        $hash->{Default} = $class->default;
+    }
+
+    return $hash;
+};
 
 no Mouse;
 __PACKAGE__->meta->make_immutable;
 
-method TO_JSON ($class :) : Return(HashRef) {
-    return +{
-        Name => $class->Name,
-        Type => $class->Type,
-    };
-}
 
 1;
