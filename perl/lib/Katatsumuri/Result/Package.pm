@@ -1,11 +1,13 @@
 package Katatsumuri::Result::Package;
 
 use strictures 2;
-use Function::Parameters;
+use Function::Parameters qw(:std :modifiers);
 use Function::Return;
 use Types::Standard -types;
+use Katatsumuri::Result;
+
 use Mouse;
-use PPI::Statement::Package;
+extends 'Katatsumuri::Result';
 
 has file_name    => (is => 'ro', isa => Str, required => 1);
 has package_ast  => (is => 'ro', isa => InstanceOf ['PPI::Statement::Package'], required => 1);
@@ -38,17 +40,21 @@ has properties => (
     required => 1
 );
 
+override TO_JSON ($class :) : Return(HashRef) {
+    return +{
+        Name         => $class->name,
+        Namespace    => $class->namespace,
+        SuperClasses => $class->super_classes,
+        Properties   => $class->properties,
+        Methods      => $class->methods,
+    };
+};
+
 no Mouse;
 __PACKAGE__->meta->make_immutable;
 
-method TO_JSON ($class :) : Return(HashRef) {
-    return +{
-        Name         => $class->Name,
-        Namespace    => $class->Namespace,
-        SuperClasses => $class->SuperClasses,
-        Properties   => $class->Properties,
-        Methods      => $class->Methods,
-    };
+method full_name ($class :) : Return(Str) {
+    return join('::', @{$class->namespace}, $class->name);
 };
 
 # JSON文字列を返す
