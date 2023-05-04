@@ -9,16 +9,12 @@ use Type::Library -base, -declare => qw( PpiStatementPackage Methods );
 type 'PpiStatementPackage', as InstanceOf ['PPI::Statement::Package'];
 
 use PPI;
-use DDP;
-use PPI::Dumper;
 
 use Katatsumuri::Result::Property;
 use Mouse::Util;
 
 method inspect ($class : PpiStatementPackage $package_statement) :
   Return(ArrayRef[InstanceOf['Katatsumuri::Result::Property']]) {
-
-    #PPI::Dumper->new($package_statement)->print if $package_statement->namespace eq 'My::Namespace::Person';
 
     my $mouse_on = 0;
     my $has_statements = $package_statement->find(

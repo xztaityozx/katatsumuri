@@ -17,8 +17,6 @@ type 'ReturnsOrUndef',      as ArrayRef [InstanceOf ['Katatsumuri::Result::Metho
 
 use List::Util qw(all any uniq);
 
-use DDP;
-
 method inspect ($class : CodeRef $coderef, PpiStatement $statement_node) : Return(ReturnsOrUndef) {
     if (my $meta = Function::Return::meta($coderef)) {
         my @returns;
