@@ -7,10 +7,10 @@ use Types::Standard -types;
 use Katatsumuri::Result;
 
 use Mouse;
+use JSON::XS ();
 extends 'Katatsumuri::Result';
 
 has file_name    => (is => 'ro', isa => Str, required => 1);
-has package_ast  => (is => 'ro', isa => InstanceOf ['PPI::Statement::Package'], required => 1);
 
 has name => (
     is => 'ro',

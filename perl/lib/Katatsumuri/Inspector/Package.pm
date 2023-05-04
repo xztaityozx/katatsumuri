@@ -38,7 +38,6 @@ method inspect($class: Str $file_name) :Return(ArrayRef[InstanceOf['Katatsumuri:
             super_classes => $class->_get_superclasses($package_node->namespace),
             methods => Katatsumuri::Inspector::Methods->inspect($package_node),
             properties => Katatsumuri::Inspector::Properties->inspect($package_node),
-            package_ast => $package_node,
             file_name => $file_name,
         );
     }
