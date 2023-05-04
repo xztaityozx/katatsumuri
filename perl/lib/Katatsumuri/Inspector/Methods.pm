@@ -21,8 +21,6 @@ type 'PpiStatementPackage', as InstanceOf ['PPI::Statement::Package'];
 type 'Methods',             as ArrayRef [InstanceOf ['Katatsumuri::Result::Method']];
 type 'PpiDocument',         as InstanceOf ['PPI::Document'];
 
-use DDP;
-
 # _inspect_function_parameters_declares は Function::Parameters を使って定義した関数・メソッドのシグネチャ情報を配列で返す
 method _inspect_function_parameters_declares ($class : PpiStatementPackage $package_node, PpiDocument $ppi_document) :
   Return(Methods) {
