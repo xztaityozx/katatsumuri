@@ -54,7 +54,7 @@ method _inspect_from_ppi_statement_variable ($class : PpiStatementVariable $stat
     #   右辺値がshiftと@_のみのリスト: array => any
     #   右辺値がshiftか@_のみ: any
     if ($left_hand->isa('PPI::Token::Symbol')) {
-        if($left_hand->symbol eq '$self' || $left_hand->symbol eq '$class') {
+        if ($left_hand->symbol eq '$self' || $left_hand->symbol eq '$class') {
             return undef;
         }
         if ($right_hand->isa('PPI::Structure::List') && $class->_is_shift_only_list($right_hand)) {
@@ -167,8 +167,22 @@ method inspect ($class : CodeRef $coderef, PpiStatement $declare_statement) : Re
         my @arguments;
         foreach my $param ($info->positional_required) {
             push @arguments,
-              Katatsumuri::Result::Method::Argument->new(Name => $param->name, Type => $param->type->name);
+              Katatsumuri::Result::Method::Argument->new(
+                  name => $param->name,
+                  type => $param->type ? $param->type->name : 'any',
+                  required => 1
+              );
         }
+
+        foreach my $param ($info->positional_optional) {
+            push @arguments,
+              Katatsumuri::Result::Method::Argument->new(
+                  name => $param->name,
+                  type => $param->type ? $param->type->name : 'any',
+                  required => 0
+              );
+        }
+
         return \@arguments;
     }
     if (my $meta = Function::Return::meta($coderef)) {
@@ -178,8 +192,13 @@ method inspect ($class : CodeRef $coderef, PpiStatement $declare_statement) : Re
         # Function::Parameters と Function::Return を併用している場合はこちらのブロックで処理される
         my @arguments;
         foreach my $arg ($meta->all_args) {
-            push @arguments,
-              map { Katatsumuri::Result::Method::Argument->new(Name => $_->name, Type => $_->type->name) } @$arg;
+            push @arguments, map {
+                Katatsumuri::Result::Method::Argument->new(
+                    name => $_->name, 
+                    type => $_->type ? $_->type->name : 'any',
+                    required => $_->required
+                )
+            } grep { $_->name ne '$self' && $_->name ne '$class' } @$arg;
         }
         return \@arguments;
     }
