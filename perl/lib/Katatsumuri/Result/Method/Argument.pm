@@ -1,6 +1,6 @@
 package Katatsumuri::Result::Method::Argument;
 use strictures 2;
-use Types::Standard      qw( Str HashRef Undef Bool );
+use Types::Standard      qw( Str HashRef Any Undef Bool );
 use Function::Return;
 use Function::Parameters qw(method override);
 
@@ -10,7 +10,7 @@ extends 'Katatsumuri::Result';
 
 has name => (is => 'ro', isa => Str, required => 1);
 has type => (is => 'ro', isa => Str|HashRef, required => 1);
-has default => (is => 'ro', isa => Str|HashRef|Undef );
+has default => (is => 'ro', isa => Any|Undef );
 has required => (is => 'ro', isa => Bool, required => 1 );
 
 override TO_JSON ($class :) : Return(HashRef) {
