@@ -17,8 +17,16 @@ has type => (
 has value => (is => 'ro', isa => Any | HashRef | Undef, default => sub { return undef });
 
 override TO_JSON ($class :) : Return(HashRef) {
+    my $type = $class->type;
+    if(ref($type) eq 'HASH') {
+        if(exists($type->{type})) {
+            $type->{type} = $class->normalize_type_name($type->{type});
+        }
+    } else {
+        $type = $class->normalize_type_name($type);
+    }
     my $hash = +{ 
-        Type => $class->normalize_type_name($class->type), 
+        Type => $type
     };
 
     if(defined($class->value)) {
