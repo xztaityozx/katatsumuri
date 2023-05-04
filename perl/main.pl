@@ -188,8 +188,10 @@ use Katatsumuri::Inspector::Package;
 
 use DDP;
 
-my $result = Katatsumuri::Inspector::Package->inspect('./main.pl');
+my $result = Katatsumuri::Inspector::Package->inspect('./lib/My/Namespace/B.pm');
 
 foreach my $package (@$result) {
     print $package->to_json_string;
 }
+
+
