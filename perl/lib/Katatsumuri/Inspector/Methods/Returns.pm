@@ -31,11 +31,11 @@ method inspect ($class : CodeRef $coderef, PpiStatement $statement_node) : Retur
 
         if (ref($return_types) eq 'ARRAY') {
             foreach my $return_type (@$return_types) {
-                push @returns, Katatsumuri::Result::Method::Return->new(type => $return_type->name);
+                push @returns, Katatsumuri::Result::Method::Return->new(type => $return_type);
             }
         }
         else {
-            push @returns, Katatsumuri::Result::Method::Return->new(type => $return_types->name);
+            push @returns, Katatsumuri::Result::Method::Return->new(type => $return_types);
         }
 
         return \@returns;
@@ -70,7 +70,6 @@ method inspect ($class : CodeRef $coderef, PpiStatement $statement_node) : Retur
     my @types;
     my @values;
     foreach my $return_statement (@{$return_statements}) {
-        # TODO: なんかここバグってるっぽく、return "a"もvoidになっちゃう
         my $type_and_value = $class->_get_statement_break_type_and_value($return_statement);
         push @types,  $type_and_value->{type};
         push @values, $type_and_value->{value} if defined $type_and_value->{value};
@@ -150,7 +149,7 @@ method _get_token_type_and_value ($class : PpiToken $token) : Return(HashRef) {
 
         # 空の配列のときはany型の配列として扱う
         if (!$array_statement) {
-            return { type => +{ array => 'any' } };
+            return { type => ArrayRef[Any] };
         }
         my $array_elements = $array_statement->find(
             sub {
@@ -176,15 +175,16 @@ method _get_token_type_and_value ($class : PpiToken $token) : Return(HashRef) {
         # 再帰の方法を変えなきゃいけなくてめんどい
         if (scalar uniq(map { $_->{type} } @sub_types) == 1) {
             return +{
-                type => +{
-                    array => $sub_types[0]->{type}
-                },
+                #type => +{
+                    #array => $sub_types[0]->{type}
+                #},
+                type => ArrayRef[$sub_types[0]->{type}],
                 value => [map { $_->{value} } @sub_types]
             };
         }
 
         # 混ざっていたり、特定できないときはany型の配列として扱う
-        return { type => +{ array => 'any' } };
+        return { type => ArrayRef[Any] };
     }
 
     return +{ type => 'any' };

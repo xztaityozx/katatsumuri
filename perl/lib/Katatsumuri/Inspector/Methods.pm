@@ -21,6 +21,8 @@ type 'PpiStatementPackage', as InstanceOf ['PPI::Statement::Package'];
 type 'Methods',             as ArrayRef [InstanceOf ['Katatsumuri::Result::Method']];
 type 'PpiDocument',         as InstanceOf ['PPI::Document'];
 
+use Class::Load qw(load_class);
+
 # _inspect_function_parameters_declares は Function::Parameters を使って定義した関数・メソッドのシグネチャ情報を配列で返す
 method _inspect_function_parameters_declares ($class : PpiStatementPackage $package_node, PpiDocument $ppi_document) :
   Return(Methods) {
@@ -55,6 +57,8 @@ method _inspect_function_parameters_declares ($class : PpiStatementPackage $pack
     if (!$function_parameters_declares) {
         return [];
     }
+
+    load_class($package_node->namespace);
 
     my @result;
     foreach my $declare_node (@{$function_parameters_declares}) {

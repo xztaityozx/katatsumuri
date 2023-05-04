@@ -61,7 +61,7 @@ method _inspect_from_ppi_statement_variable ($class : PpiStatementVariable $stat
             push @arguments,
               Katatsumuri::Result::Method::Argument->new(
                 name     => $left_hand->symbol,
-                type     => +{ array => 'any' },
+                type     => ArrayRef[Any],
                 required => 1
               );
         }
@@ -70,7 +70,7 @@ method _inspect_from_ppi_statement_variable ($class : PpiStatementVariable $stat
             push @arguments,
               Katatsumuri::Result::Method::Argument->new(
                 name     => $left_hand->symbol,
-                type     => 'any',
+                type     => Any,
                 required => 1
               );
         }
@@ -87,7 +87,7 @@ method _inspect_from_ppi_statement_variable ($class : PpiStatementVariable $stat
                 push @arguments,
                   Katatsumuri::Result::Method::Argument->new(
                     name     => $variable,
-                    type     => 'any',
+                    type     => Any,
                     required => 1
                   );
             }
@@ -169,7 +169,7 @@ method inspect ($class : CodeRef $coderef, PpiStatement $declare_statement) : Re
             push @arguments,
               Katatsumuri::Result::Method::Argument->new(
                   name => $param->name,
-                  type => $param->type ? $param->type->name : 'any',
+                  type => $param->type ? $param->type : Any,
                   required => 1
               );
         }
@@ -178,7 +178,7 @@ method inspect ($class : CodeRef $coderef, PpiStatement $declare_statement) : Re
             push @arguments,
               Katatsumuri::Result::Method::Argument->new(
                   name => $param->name,
-                  type => $param->type ? $param->type->name : 'any',
+                  type => $param->type ? $param->type : Any,
                   required => 0
               );
         }
@@ -195,7 +195,7 @@ method inspect ($class : CodeRef $coderef, PpiStatement $declare_statement) : Re
             push @arguments, map {
                 Katatsumuri::Result::Method::Argument->new(
                     name => $_->name, 
-                    type => $_->type ? $_->type->name : 'any',
+                    type => $_->type ? $_->type : Any,
                     required => $_->required
                 )
             } grep { $_->name ne '$self' && $_->name ne '$class' } @$arg;

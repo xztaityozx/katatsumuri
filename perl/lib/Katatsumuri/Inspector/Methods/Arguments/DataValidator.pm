@@ -66,7 +66,7 @@ method inspect ($class : PpiStructureList $data_validator_expression_statement) 
             push @arguments,
               Katatsumuri::Result::Method::Argument->new(
                 name => $key->content,
-                type => 'any',
+                type => Any,
                 required => 1,
               );
         }
@@ -81,7 +81,7 @@ method inspect ($class : PpiStructureList $data_validator_expression_statement) 
             my $content = $value->content;
             if ($content =~ /^\{/x) {
                 my $hash_ref = $class->_parse_hash_ref($value);
-                my $type = $hash_ref->{isa} || 'any';
+                my $type = $hash_ref->{isa} || Any;
                 push @arguments,
                   Katatsumuri::Result::Method::Argument->new(
                     name => $key->content,
