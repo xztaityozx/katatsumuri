@@ -12,9 +12,11 @@ method TO_JSON ($class :) : Return(HashRef) {
 
 my $integer_synonym = ['Int', 'integer'];
 my $string_synonym = ['Str', 'string'];
-my $object_synonym = ['Object', 'object'];
-my $array_synonym = ['ArrayRef', 'array', 'Array'];
+my $object_synonym = ['Object', 'object', 'HashRef', 'Hash', 'HASH'];
+my $array_synonym = ['ArrayRef', 'array', 'Array', 'ARRAY'];
 my $void_synonym = ['Void', 'void'];
+my $any_synonym = ['Any', 'any'];
+my $bool_synonym = ['Bool', 'bool', 'boolean'];
 
 # normalize_type_name は型の表記ゆれをなおして返す
 method normalize_type_name (Str | ClassName $type_name) : Return(Str) {
@@ -32,6 +34,12 @@ method normalize_type_name (Str | ClassName $type_name) : Return(Str) {
     }
     if (grep { $type_name eq $_ } @{$void_synonym}) {
         return 'void';
+    }
+    if (grep { $type_name eq $_ } @{$any_synonym}) {
+        return 'any';
+    }
+    if (grep { $type_name eq $_ } @{$bool_synonym}) {
+        return 'boolean';
     }
     return $type_name;
 }
