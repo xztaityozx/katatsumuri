@@ -17,6 +17,8 @@ type 'ReturnsOrUndef',      as ArrayRef [InstanceOf ['Katatsumuri::Result::Metho
 
 use List::Util qw(all any uniq);
 
+use DDP;
+
 method inspect ($class : CodeRef $coderef, PpiStatement $statement_node) : Return(ReturnsOrUndef) {
     if (my $meta = Function::Return::meta($coderef)) {
         my @returns;
@@ -43,8 +45,24 @@ method inspect ($class : CodeRef $coderef, PpiStatement $statement_node) : Retur
 
     # シグネチャ情報が得られないときはPPIをたどってできるだけ返却値の型を取り出す
     my @package_children = $statement_node->children;
-    # findで探すと中で使ってる無名関数ものも見つけちゃうのでgrepで探す
-    my $return_statements = [ grep { $_->isa('PPI::Statement::Break') and $_->first_element->content eq 'return'  } @package_children ];
+    my $return_statements = $statement_node->find(
+        sub {
+            my ($root, $node) = @_;
+
+            # メソッドの中にメソッドがある場合や、何かの引数としての無名関数などは無視したいので、親の親を見る
+            # というのも構造的には以下のようになってるから
+            # PPI::Statement::Sub
+            #   + PPI::Statement::Block
+            #     + PPI::Statement::Break
+            # Breakはreturn以外にcontinueとかnextもあるので、Breakの次の要素がreturnかどうかもみてる
+            if ($root != $node->parent->parent) {
+                return 0;
+            }
+            if($node->isa('PPI::Statement::Break')) {
+                return $node->first_element->content eq 'return';
+            }
+        }
+    );
 
     # return文がない場合はvoidとして扱う
     if (!$return_statements) {
