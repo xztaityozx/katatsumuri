@@ -10,7 +10,7 @@ use Mouse;
 use JSON::XS ();
 extends 'Katatsumuri::Result';
 
-has file_name    => (is => 'ro', isa => Str, required => 1);
+has file_name    => (is => 'ro', isa => Str|ScalarRef, required => 1);
 
 has name => (
     is => 'ro',
