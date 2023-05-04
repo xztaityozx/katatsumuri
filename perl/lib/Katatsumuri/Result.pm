@@ -26,6 +26,7 @@ my $any_synonym = ['Any', 'any'];
 my $bool_synonym = ['Bool', 'bool', 'boolean'];
 
 method _convert_type_tiny ($class : TypeTiny $type_tiny) : Return(HashRef) {
+    # TODO: EnumとかDictとかやってない
     if ($type_tiny->is_anon) {
         if ($type_tiny->is_parameterized) {
             my $parent_type = $type_tiny->parent;
@@ -104,7 +105,7 @@ method normalize_type (Str | HashRef | TypeTiny $type_name) : Return(HashRef) {
                 SubType => $self->_convert($type_name->{array})
             };
         }
-    } elsif (ref($type_name) eq 'Type::Tiny') {
+    } elsif ($type_name->can('isa') && $type_name->isa('Type::Tiny')) {
         return $self->_convert_type_tiny($type_name);
     } else {
         return +{ Type => $self->_convert($type_name) };
