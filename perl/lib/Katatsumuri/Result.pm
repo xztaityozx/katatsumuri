@@ -26,6 +26,7 @@ my $any_synonym = ['Any', 'any'];
 my $bool_synonym = ['Bool', 'bool', 'boolean'];
 
 method _convert_type_tiny ($class : TypeTiny $type_tiny) : Return(HashRef) {
+
     # TODO: EnumとかDictとかやってない
     if ($type_tiny->is_anon) {
         if ($type_tiny->is_parameterized) {
@@ -38,7 +39,7 @@ method _convert_type_tiny ($class : TypeTiny $type_tiny) : Return(HashRef) {
                 return +{ Type => 'object', };
             }
 
-            my $type =+{};
+            my $type = +{};
             if ($parent_type->name eq 'ArrayRef') {
                 $type = +{ Type => 'array' };
             }
@@ -50,6 +51,12 @@ method _convert_type_tiny ($class : TypeTiny $type_tiny) : Return(HashRef) {
             my $subtype = $class->_get_subtype($type_tiny->parameters);
 
             return +{ %{$type}, %{$subtype} };
+        }
+        elsif ($type_tiny->isa('Type::Tiny::Union')) {
+            return +{
+                Type  => 'union',
+                Union => [uniq(map { $class->_convert_type_tiny($_)->{Type} } @{ $type_tiny->type_constraints })]
+            };
         }
         else {
             return +{ Type => 'any' };
@@ -96,18 +103,21 @@ method _convert (Str $type_name) : Return(Str) {
 
 # normalize_type は型の表記ゆれをなおして返す
 method normalize_type (Str | HashRef | TypeTiny $type_name) : Return(HashRef) {
-    if(ref($type_name) eq 'HASH') {
-        if(exists($type_name->{type})) {
-            return +{Type =>  $self->_convert($type_name->{type})};
-        } elsif(exists($type_name->{array})) {
+    if (ref($type_name) eq 'HASH') {
+        if (exists($type_name->{type})) {
+            return +{ Type => $self->_convert($type_name->{type}) };
+        }
+        elsif (exists($type_name->{array})) {
             return +{
-                Type => 'array',
+                Type    => 'array',
                 SubType => $self->_convert($type_name->{array})
             };
         }
-    } elsif ($type_name->can('isa') && $type_name->isa('Type::Tiny')) {
+    }
+    elsif ($type_name->can('isa') && $type_name->isa('Type::Tiny')) {
         return $self->_convert_type_tiny($type_name);
-    } else {
+    }
+    else {
         return +{ Type => $self->_convert($type_name) };
     }
 }

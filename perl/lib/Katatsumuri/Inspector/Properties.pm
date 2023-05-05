@@ -5,19 +5,22 @@ use Function::Parameters qw(:std);
 use Function::Return;
 use Types::Standard -types;
 use Type::Utils -all;
-use Type::Library -base, -declare => qw( PpiStatementPackage Methods );
+use Type::Library -base, -declare => qw( PpiStatementPackage Methods PpiDocument );
 type 'PpiStatementPackage', as InstanceOf ['PPI::Statement::Package'];
+type 'PpiDocument', as InstanceOf ['PPI::Document'];
 
 use PPI;
 
 use Katatsumuri::Result::Property;
 use Mouse::Util;
 
-method inspect ($class : PpiStatementPackage $package_statement) :
+method inspect ($class : PpiStatementPackage $package_statement, PpiDocument $ppi_document) :
   Return(ArrayRef[InstanceOf['Katatsumuri::Result::Property']]) {
 
+    my $target_node = $package_statement->file_scoped ? $ppi_document : $package_statement;
+
     my $mouse_on = 0;
-    my $has_statements = $package_statement->find(
+    my $has_statements = $ppi_document->find(
         sub {
             my ($root, $node) = @_;
             if ($node->isa('PPI::Statement::Include')) {
@@ -53,7 +56,7 @@ method inspect ($class : PpiStatementPackage $package_statement) :
         push @properties,
           Katatsumuri::Result::Property->new(
             name       => $attr->name,
-            type       => $attr->type_constraint->name,
+            type       => $attr->type_constraint,
             default    => $attr->default,
             is_readonly => $attr->{is} eq 'ro' ? 1 : 0,
           );

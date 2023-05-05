@@ -38,7 +38,7 @@ method inspect ($class : Str | ScalarRef $file_name) : Return(ArrayRef[InstanceO
             namespace     => \@namespace,
             super_classes => $class->_get_superclasses($package_node->namespace),
             methods       => Katatsumuri::Inspector::Methods->inspect($package_node, $document),
-            properties    => Katatsumuri::Inspector::Properties->inspect($package_node),
+            properties    => Katatsumuri::Inspector::Properties->inspect($package_node, $document),
             file_name     => $file_name,
           );
     }
