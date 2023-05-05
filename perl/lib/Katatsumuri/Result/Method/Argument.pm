@@ -10,7 +10,7 @@ extends 'Katatsumuri::Result';
 
 has name => (is => 'ro', isa => Str, required => 1);
 has type => (is => 'ro', isa => Str|HashRef|InstanceOf['Type::Tiny'], required => 1);
-has default => (is => 'ro', isa => Any|Undef );
+has default => (is => 'ro', isa => HashRef|Undef );
 has required => (is => 'ro', isa => Bool, required => 1 );
 
 override TO_JSON ($class :) : Return(HashRef) {

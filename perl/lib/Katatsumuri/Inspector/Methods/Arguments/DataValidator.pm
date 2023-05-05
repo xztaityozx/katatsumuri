@@ -202,10 +202,10 @@ method _parse_data_validator_right_hand_hash_ref (Str $key, PpiElement $value) :
 
     if ($key eq 'default') {
         if ($value->isa('PPI::Token::Quote')) {
-            return +{ type => 'constant', value => $value->string };
+            return +{ Type => 'constant', Value => $value->string };
         }
         elsif ($value->isa('PPI::Token::Number')) {
-            return +{ type => 'constant', value => 0+$value->content };
+            return +{ Type => 'constant', Value => 0+$value->content };
         }
         elsif ($value->isa('PPI::Stetement::Sub')) {
             return +{ type => 'sub' };
