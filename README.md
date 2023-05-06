@@ -77,33 +77,33 @@ namespace My.Namespace
     {
         public int A()
         {
-            throw new NotImplementedException;
+            throw new NotImplementedException();
         }
 
         public int E(string str, object x, int y = 1)
         {
-            throw new NotImplementedException;
+            throw new NotImplementedException();
         }
 
         ///<returns>Return type: :Return(string,integer)</returns>
         public (string, int) F()
         {
-            throw new NotImplementedException;
+            throw new NotImplementedException();
         }
 
         public static int B()
         {
-            throw new NotImplementedException;
+            throw new NotImplementedException();
         }
 
         public int C()
         {
-            throw new NotImplementedException;
+            throw new NotImplementedException();
         }
 
         public int D(string str, object x, int y)
         {
-            throw new NotImplementedException;
+            throw new NotImplementedException();
         }
 
         public string Name { get; set; } = "this is name";

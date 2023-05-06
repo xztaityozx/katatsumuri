@@ -159,7 +159,9 @@ public record Method
                 SyntaxFactory.Block(
                     SyntaxFactory.ThrowStatement(
                         SyntaxFactory.ObjectCreationExpression(
-                            SyntaxFactory.IdentifierName(nameof(NotImplementedException))
+                            SyntaxFactory.ParseTypeName(nameof(NotImplementedException)),
+                            SyntaxFactory.ArgumentList(),
+                            null
                         )
                     )
                 )
