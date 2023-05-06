@@ -170,7 +170,7 @@ public record Method
             // 戻り値の型が複数個あるときは、もともとどんな型で定義されていたかのヒントを書いておく
             // <returns></returns>に書いてるけど個々じゃなくてもいいかもしれない
             var comment =
-                $"Return type of original is probably :Return({string.Join(",", Returns.Select(x => x.Type.Type))})";
+                $"Return type: :Return({string.Join(",", Returns.Select(x => x.Type.Type))})";
             method = method.WithLeadingTrivia(
                 SyntaxFactory.TriviaList(
                     SyntaxFactory.Trivia(
