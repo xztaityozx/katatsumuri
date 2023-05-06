@@ -47,6 +47,7 @@ override TO_JSON ($class :) : Return(HashRef) {
         SuperClasses => $class->super_classes,
         Properties   => $class->properties,
         Methods      => $class->methods,
+        FileName     => $class->file_name,
     };
 };
 
