@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -75,6 +76,17 @@ public record Property(string Name, TypeConstraint Type, bool IsReadonly, JsonEl
                     )
                 )
                 .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
+        }
+
+        if (Type is { IsUnion: true, Union: not null })
+        {
+            declaration = declaration.WithLeadingTrivia(
+                SyntaxFactory.TriviaList(
+                    SyntaxFactory.Comment(
+                        $"// original type: Union[{string.Join("|", Type.Union.Select(t => t))}]"
+                    )
+                )
+            );
         }
 
         return declaration;

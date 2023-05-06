@@ -18,18 +18,9 @@ public record TypeConstraint(string Type, string? SubType = null, IEnumerable<st
         if (Union is null)
             return new TypeConstraint("object").GetTypeSyntax();
 
-        if (Union.Distinct().Count() == 1)
-        {
-            return new TypeConstraint(Union.First()).GetTypeSyntax();
-        }
-
-        return new TypeConstraint("object")
-            .GetTypeSyntax()
-            .WithLeadingTrivia(
-                SyntaxFactory.Comment(
-                    $"original type parameter is Union[{string.Join(",", Union.Distinct())}]"
-                )
-            );
+        return Union.Distinct().Count() == 1
+            ? new TypeConstraint(Union.First()).GetTypeSyntax()
+            : new TypeConstraint("object").GetTypeSyntax();
     }
 
     /// <summary>
@@ -73,9 +64,12 @@ public record TypeConstraint(string Type, string? SubType = null, IEnumerable<st
             or "any"
                 => SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.ObjectKeyword)),
             "bool" => SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.BoolKeyword)),
+            "union" => BuildUnionTypeSyntax(),
             // 上のどれにも当てはまらないときは独自の型
             // Perlは::でネームスペースを区切るのでC#流に書き換えてからパースさせる
             _ => SyntaxFactory.ParseTypeName(Type.Replace("::", ".")),
         };
     }
+
+    public bool IsUnion => Type == "union";
 }
