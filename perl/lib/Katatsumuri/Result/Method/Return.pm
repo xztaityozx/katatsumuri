@@ -5,7 +5,7 @@ use Function::Return;
 use Function::Parameters qw(method override);
 use Types::Standard -types;
 
-use Mouse;
+use Moo;
 use Katatsumuri::Result;
 
 extends 'Katatsumuri::Result';
@@ -18,7 +18,7 @@ has type => (
 has value => (is => 'ro', isa => Any | HashRef | Undef, default => sub { return undef });
 
 override TO_JSON ($class :) : Return(HashRef) {
-    my $hash = +{ 
+    my $hash = +{
         Type => $class->normalize_type($class->type),
     };
 
@@ -28,8 +28,5 @@ override TO_JSON ($class :) : Return(HashRef) {
 
     return $hash;
 };
-
-no Mouse;
-__PACKAGE__->meta->make_immutable;
 
 1;

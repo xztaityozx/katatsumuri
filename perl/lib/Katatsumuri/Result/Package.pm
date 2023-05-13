@@ -6,7 +6,7 @@ use Function::Return;
 use Types::Standard -types;
 use Katatsumuri::Result;
 
-use Mouse;
+use Moo;
 use JSON::XS ();
 extends 'Katatsumuri::Result';
 
@@ -50,9 +50,6 @@ override TO_JSON ($class :) : Return(HashRef) {
         FileName     => $class->file_name,
     };
 };
-
-no Mouse;
-__PACKAGE__->meta->make_immutable;
 
 method full_name ($class :) : Return(Str) {
     return join('::', @{$class->namespace}, $class->name);

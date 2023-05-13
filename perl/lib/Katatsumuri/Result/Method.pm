@@ -1,6 +1,5 @@
 package Katatsumuri::Result::Method;
 use strictures 2;
-use Mouse;
 use Katatsumuri::Result;
 extends 'Katatsumuri::Result';
 
@@ -10,6 +9,7 @@ use Function::Parameters qw( method override );
 use Katatsumuri::Result::Method::Argument;
 use Katatsumuri::Result::Method::Return;
 use JSON::XS ();
+use Moo;
 
 has name => (is => 'ro', isa => Str, required => 1);
 has arguments =>
@@ -20,15 +20,12 @@ has declare_type => (is => 'ro', isa => Enum ["fun", "method", "override", "arou
 
 # JSON::XSのためのシリアライザ
 override TO_JSON ($class :) : Return(HashRef) {
-    return +{ 
+    return +{
         Name => $class->name,
         Arguments => $class->arguments,
         Returns => $class->returns,
         DeclareType => $class->declare_type
     };
 }
-
-no Mouse;
-__PACKAGE__->meta->make_immutable;
 
 1;

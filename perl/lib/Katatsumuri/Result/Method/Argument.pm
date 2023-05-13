@@ -4,7 +4,7 @@ use Types::Standard      qw( Str HashRef Any Undef Bool InstanceOf );
 use Function::Return;
 use Function::Parameters qw(method override);
 
-use Mouse;
+use Moo;
 use Katatsumuri::Result;
 extends 'Katatsumuri::Result';
 
@@ -25,9 +25,6 @@ override TO_JSON ($class :) : Return(HashRef) {
 
     return $hash;
 };
-
-no Mouse;
-__PACKAGE__->meta->make_immutable;
 
 
 1;

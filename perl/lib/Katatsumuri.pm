@@ -9,12 +9,9 @@ use Katatsumuri::Result::Method;
 use Katatsumuri::Inspector::Methods;
 use Mouse::Util;
 use Carp;
-use Mouse;
+use Moo;
 
 has class_name => (is => 'ro', isa => Str, required => 1);
-
-no Mouse;
-__PACKAGE__->meta->make_immutable;
 
 method _get_superclasses ($class :) : Return(ArrayRef[Str]) {
     no strict 'refs';

@@ -1,11 +1,11 @@
 package Katatsumuri::Result::Property;
 use strictures 2;
-use Mouse;
 use Types::Standard qw( Str Bool Any HashRef InstanceOf );
 use Function::Return;
 use Function::Parameters qw( method override );
 use Katatsumuri::Result;
 extends 'Katatsumuri::Result';
+use Moo;
 
 has type       => ( is => 'ro', isa => InstanceOf['Type::Tiny'],  required => 1 );
 has name       => ( is => 'ro', isa => Str,  required => 1 );
@@ -25,9 +25,6 @@ override TO_JSON ( $class : ) : Return(HashRef) {
   }
   return $hash;
 };
-
-no Mouse;
-__PACKAGE__->meta->make_immutable;
 
 1;
 
