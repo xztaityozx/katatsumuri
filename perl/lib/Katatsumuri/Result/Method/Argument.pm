@@ -1,6 +1,6 @@
 package Katatsumuri::Result::Method::Argument;
 use strictures 2;
-use Types::Standard qw( Str HashRef Any Undef Bool InstanceOf );
+use Types::Standard qw( Str HashRef Any Undef Bool InstanceOf Dict );
 use Moo;
 use Function::Parameters;
 use Function::Return;
@@ -9,7 +9,7 @@ has name     => (is => 'ro', isa => Str, required => 1);
 has type     => (is => 'ro', isa => InstanceOf['Katatsumuri::Type'], required => 1);
 has required => (is => 'ro', isa => Bool, required => 1);
 
-method to_schema ($class :) : Return(HashRef) {
+method to_schema ($class :) : Return(Dict[name => Str, type => HashRef, required => Bool]) {
     return +{
         name     => $class->name,
         type     => $class->type->to_json_schema(),
