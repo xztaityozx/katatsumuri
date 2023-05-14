@@ -11,3 +11,6 @@ allow = refs
 allow_secrets = Bang Bang
 
 [Variables::ProhibitLoopOnHash]
+
+[TestingAndDebugging::ProhibitNoWarnings]
+allow = 'experimental::try'
