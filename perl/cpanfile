@@ -17,3 +17,4 @@ requires 'Type::Tiny';
 requires 'Type::Utils';
 requires 'Types::Standard';
 requires 'strictures';
+requires 'Feature::Compat::Try';
