@@ -217,18 +217,21 @@ method _to_upper_camel_case_string (ClassName | Str $class_name) : Return(Str) {
     return $str;
 }
 
-method to_json_schema ($class :) : Return(HashRef | ArrayRef) {
+# to_json_schema はType::Tinyを表すJSON Schemaを作って返す
+method to_json_schema ($class :) : Return(HashRef) {
     my $t = $class->_convert($class->type);
-    $t->{description} =
-        Str->check($class->type)      ? $class->type
-      : ArrayRef->check($class->type) ? join(", ", @{ $class->type })
-      :                                 $class->type->display_name;
+    $t->{description} = "original Perl type: "
+      . (
+          Str->check($class->type)      ? $class->type
+        : ArrayRef->check($class->type) ? join(", ", @{ $class->type })
+        :                                 $class->type->display_name
+      );
 
     if (!Undef->check($class->default)) {
         $t->{default} = $class->default;
     }
     if (!Undef->check($class->readonly)) {
-        $t->{readOnly} = $class->readonly;
+        $t->{readOnly} = $class->readonly ? \1 : \0;
     }
     return $t;
 }
