@@ -4,7 +4,6 @@ use strictures 2;
 use Function::Parameters;
 use Function::Return;
 use Types::Standard -types;
-use Katatsumuri::Result;
 use Type::Utils -all;
 use Type::Library -base, -declare => qw(ObjectSchemaType);
 

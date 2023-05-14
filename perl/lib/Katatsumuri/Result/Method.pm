@@ -1,6 +1,5 @@
 package Katatsumuri::Result::Method;
 use strictures 2;
-use Katatsumuri::Result;
 use Types::Standard qw( Str HashRef ArrayRef InstanceOf Undef Enum Dict Maybe );
 use Type::Utils -all;
 use Type::Library -base, -declare => qw(MethodSchema DeclareType);
@@ -17,7 +16,6 @@ type MethodSchema,
 type DeclareType, as Enum ["fun", "method", "override", "around", "before", "after", "sub", "unknown"];
 
 use Moo;
-extends 'Katatsumuri::Result';
 
 has name => (is => 'ro', isa => Str, required => 1);
 has arguments => (
