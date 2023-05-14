@@ -10,6 +10,7 @@ use Mouse;
 has name => (is => 'ro', isa => Str, default => 'this is name');
 has age => (is => 'ro', isa => Int, required => 1);
 has union => (is => 'ro', isa => Str|Int, required => 1);
+has dict => (is => 'ro', isa => Dict[name => Str, age => Int], required => 1);
 
 no Mouse;
 __PACKAGE__->meta->make_immutable;
@@ -46,6 +47,16 @@ sub f :Return(Str, Int) {
     my ($self, $str, $x, $y) = @_;
 
     return [$str, $x+$y];
+}
+
+sub g {
+    return;
+}
+
+sub h {
+    my $a = shift;
+
+    return 1;
 }
 
 1;

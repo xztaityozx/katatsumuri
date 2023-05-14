@@ -1,20 +1,35 @@
 package Katatsumuri::Result::Package;
 
 use strictures 2;
-use Function::Parameters qw(:std :modifiers);
+use Function::Parameters;
 use Function::Return;
 use Types::Standard -types;
 use Katatsumuri::Result;
+use Type::Utils -all;
+use Type::Library -base, -declare => qw(ObjectSchemaType);
+
+type ObjectSchemaType,
+  as Dict [
+    name          => Str,
+    namespace     => ArrayRef [Str],
+    super_classes => ArrayRef [Str],
+    methods       => ArrayRef [HashRef],
+    schema        => Dict [
+        '$schema'  => Str,
+        type       => Enum["object"],
+        properties => Maybe [Map [Str, HashRef]],
+        required   => ArrayRef [Str],
+    ]
+  ];
 
 use Moo;
 use JSON::XS ();
-extends 'Katatsumuri::Result';
 
-has file_name    => (is => 'ro', isa => Str|ScalarRef, required => 1);
+has file_name => (is => 'ro', isa => Str | ScalarRef, required => 1);
 
 has name => (
-    is => 'ro',
-    isa => Str,
+    is       => 'ro',
+    isa      => Str,
     required => 1
 );
 
@@ -40,24 +55,26 @@ has properties => (
     required => 1
 );
 
-override TO_JSON ($class :) : Return(HashRef) {
-    return +{
-        Name         => $class->name,
-        Namespace    => $class->namespace,
-        SuperClasses => $class->super_classes,
-        Properties   => $class->properties,
-        Methods      => $class->methods,
-        FileName     => $class->file_name,
-    };
-};
-
 method full_name ($class :) : Return(Str) {
-    return join('::', @{$class->namespace}, $class->name);
-};
+    return join('::', @{ $class->namespace }, $class->name);
+}
 
-# JSON文字列を返す
-method to_json_string ($class :) : Return(Str) {
-    return JSON::XS->new->pretty(1)->convert_blessed(1)->canonical(1)->encode($class);
-};
+method to_json_schema ($class :) : Return(ObjectSchemaType) {
+
+    my %properties = map { $_->name => $_->type->to_json_schema } @{$class->properties};
+
+    return +{
+        name          => $class->name,
+        namespace     => $class->namespace,
+        super_classes => $class->super_classes,
+        schema        => +{
+            '$schema'  => 'https://json-schema.org/draft/2020-12/schema',
+            type       => 'object',
+            required   => [map { $_->name } grep { $_->required } @{ $class->properties }],
+            properties => \%properties,
+        },
+        methods => [map{ $_->to_schema } @{$class->methods}],
+    };
+}
 
 1;

@@ -3,6 +3,7 @@ package Katatsumuri::Inspector::Methods::Arguments;
 use strictures 2;
 use Function::Return;
 use Function::Parameters;
+use Katatsumuri::Type;
 use Types::Standard -types;
 use Type::Tiny;
 use Type::Utils -all;
@@ -61,7 +62,7 @@ method _inspect_from_ppi_statement_variable ($class : PpiStatementVariable $stat
             push @arguments,
               Katatsumuri::Result::Method::Argument->new(
                 name     => $left_hand->symbol,
-                type     => ArrayRef[Any],
+                type     => Katatsumuri::Type->new(type => ArrayRef [Any]),
                 required => 1
               );
         }
@@ -70,7 +71,7 @@ method _inspect_from_ppi_statement_variable ($class : PpiStatementVariable $stat
             push @arguments,
               Katatsumuri::Result::Method::Argument->new(
                 name     => $left_hand->symbol,
-                type     => Any,
+                type     => Katatsumuri::Type->new(type => Any),
                 required => 1
               );
         }
@@ -87,7 +88,7 @@ method _inspect_from_ppi_statement_variable ($class : PpiStatementVariable $stat
                 push @arguments,
                   Katatsumuri::Result::Method::Argument->new(
                     name     => $variable,
-                    type     => Any,
+                    type     => Katatsumuri::Type->new(type => Any),
                     required => 1
                   );
             }
@@ -168,18 +169,18 @@ method inspect ($class : CodeRef $coderef, PpiStatement $declare_statement) : Re
         foreach my $param ($info->positional_required) {
             push @arguments,
               Katatsumuri::Result::Method::Argument->new(
-                  name => $param->name,
-                  type => $param->type ? $param->type : Any,
-                  required => 1
+                name     => $param->name,
+                type     => Katatsumuri::Type->new(type => $param->type ? $param->type : Any),
+                required => 1
               );
         }
 
         foreach my $param ($info->positional_optional) {
             push @arguments,
               Katatsumuri::Result::Method::Argument->new(
-                  name => $param->name,
-                  type => $param->type ? $param->type : Any,
-                  required => 0
+                name     => $param->name,
+                type     => Katatsumuri::Type->new(type => $param->type ? $param->type : Any),
+                required => 0
               );
         }
 
@@ -194,8 +195,8 @@ method inspect ($class : CodeRef $coderef, PpiStatement $declare_statement) : Re
         foreach my $arg ($meta->all_args) {
             push @arguments, map {
                 Katatsumuri::Result::Method::Argument->new(
-                    name => $_->name, 
-                    type => $_->type ? $_->type : Any,
+                    name     => $_->name,
+                    type     => Katatsumuri::Type->new(type => $_->type ? $_->type : Any),
                     required => $_->required
                 )
             } grep { $_->name ne '$self' && $_->name ne '$class' } @$arg;

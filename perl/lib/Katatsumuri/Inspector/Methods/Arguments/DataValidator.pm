@@ -11,6 +11,7 @@ use Type::Library -base,
   qw( ArgumentsOrUndef PpiStructureList PpiElement PpiStructureConstructor );
 
 use PPI;
+use Katatsumuri::Type;
 
 type 'ArgumentsOrUndef',        as ArrayRef [InstanceOf ['Katatsumuri::Result::Method::Argument']] | Undef;
 type 'PpiStructureList',        as InstanceOf ['PPI::Structure::List'];
@@ -66,7 +67,7 @@ method inspect ($class : PpiStructureList $data_validator_expression_statement) 
             push @arguments,
               Katatsumuri::Result::Method::Argument->new(
                 name => $key->content,
-                type => Any,
+                type => Katatsumuri::Type->new(type => Any),
                 required => 1,
               );
         }
@@ -85,9 +86,8 @@ method inspect ($class : PpiStructureList $data_validator_expression_statement) 
                 push @arguments,
                   Katatsumuri::Result::Method::Argument->new(
                     name => $key->content,
-                    type => $type,
+                    type => Katatsumuri::Type->new(type => $hash_ref->{optional} ? Optional[$type] : $type, default => $hash_ref->{default}),
                     required => !$hash_ref->{optional},
-                    ( $hash_ref->{default} ? ( default => $hash_ref->{default} ) : () ),
                   );
             }
             else {
@@ -95,14 +95,14 @@ method inspect ($class : PpiStructureList $data_validator_expression_statement) 
                 push @arguments,
                   Katatsumuri::Result::Method::Argument->new(
                     name => $key->content,
-                    type => 'any'
+                    type => Katatsumuri::Type->new(type => Any)
                   );
             }
         } elsif($value->isa('PPI::Token::Quote')) {
             push @arguments,
               Katatsumuri::Result::Method::Argument->new(
                 name => $key->content,
-                type => $value->string,
+                type => Katatsumuri::Type->new(type => $value->string),
                 required => 1,
               );
         } else {
@@ -110,7 +110,7 @@ method inspect ($class : PpiStructureList $data_validator_expression_statement) 
             push @arguments,
               Katatsumuri::Result::Method::Argument->new(
                 name => $key->content,
-                type => $value->content,
+                type => Katatsumuri::Type->new(type => $value->content),
                 required => 1,
               );
         }
@@ -196,19 +196,19 @@ method _parse_data_validator_right_hand_hash_ref (Str $key, PpiElement $value) :
             return $value->content;
         }
         else {
-            return 'any';
+            return 'Any';
         }
     }
 
     if ($key eq 'default') {
         if ($value->isa('PPI::Token::Quote')) {
-            return +{ Type => 'constant', Value => $value->string };
+            return $value->string;
         }
         elsif ($value->isa('PPI::Token::Number')) {
-            return +{ Type => 'constant', Value => 0+$value->content };
+            return 0+$value->content;
         }
-        elsif ($value->isa('PPI::Stetement::Sub')) {
-            return +{ type => 'sub' };
+        else {
+            return undef;
         }
     }
 

@@ -1,30 +1,20 @@
 package Katatsumuri::Result::Method::Argument;
 use strictures 2;
-use Types::Standard      qw( Str HashRef Any Undef Bool InstanceOf );
-use Function::Return;
-use Function::Parameters qw(method override);
-
+use Types::Standard qw( Str HashRef Any Undef Bool InstanceOf );
 use Moo;
-use Katatsumuri::Result;
-extends 'Katatsumuri::Result';
+use Function::Parameters;
+use Function::Return;
 
-has name => (is => 'ro', isa => Str, required => 1);
-has type => (is => 'ro', isa => Str|HashRef|InstanceOf['Type::Tiny'], required => 1);
-has default => (is => 'ro', isa => HashRef|Undef );
-has required => (is => 'ro', isa => Bool, required => 1 );
+has name     => (is => 'ro', isa => Str, required => 1);
+has type     => (is => 'ro', isa => InstanceOf['Katatsumuri::Type'], required => 1);
+has required => (is => 'ro', isa => Bool, required => 1);
 
-override TO_JSON ($class :) : Return(HashRef) {
-    my $hash = +{
-        Name => $class->name,
-        Type => $class->normalize_type($class->type),
-        Required => $class->required ? \1 : \0,
+method to_schema ($class :) : Return(HashRef) {
+    return +{
+        name     => $class->name,
+        type     => $class->type->to_json_schema(),
+        required => $class->required
     };
-    if(defined($class->default)) {
-        $hash->{Default} = $class->default;
-    }
-
-    return $hash;
-};
-
+}
 
 1;
