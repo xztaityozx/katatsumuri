@@ -15,7 +15,8 @@ type ObjectSchemaType,
     methods       => ArrayRef [HashRef],
     schema        => Dict [
         '$schema'  => Str,
-        type       => Enum["object"],
+        type       => Enum ["object"],
+        title      => Str,
         properties => Maybe [Map [Str, HashRef]],
         required   => ArrayRef [Str],
     ]
@@ -60,7 +61,7 @@ method full_name ($class :) : Return(Str) {
 
 method to_json_schema ($class :) : Return(ObjectSchemaType) {
 
-    my %properties = map { $_->name => $_->type->to_json_schema } @{$class->properties};
+    my %properties = map { $_->name => $_->type->to_json_schema } @{ $class->properties };
 
     return +{
         name          => $class->name,
@@ -68,11 +69,12 @@ method to_json_schema ($class :) : Return(ObjectSchemaType) {
         super_classes => $class->super_classes,
         schema        => +{
             '$schema'  => 'https://json-schema.org/draft/2020-12/schema',
+            title      => $class->name,
             type       => 'object',
             required   => [map { $_->name } grep { $_->required } @{ $class->properties }],
             properties => \%properties,
         },
-        methods => [map{ $_->to_schema } @{$class->methods}],
+        methods => [map { $_->to_schema } @{ $class->methods }],
     };
 }
 
