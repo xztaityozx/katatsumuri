@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -12,15 +13,78 @@ public class Method
         public JsonSchemaType Type { get; init; } = new();
         public bool Required { get; init; } = false;
 
+        public string TrimmedName => Name.Trim('$', '@');
+
         public ParameterSyntax BuildParameterSyntax()
         {
-            return SyntaxFactory
-                .Parameter(SyntaxFactory.Identifier(Name))
-                .WithType(
-                    Required
-                        ? SyntaxFactory.NullableType(Type.BuildTypeSyntax())
-                        : Type.BuildTypeSyntax()
+            var syntax = SyntaxFactory.Parameter(SyntaxFactory.Identifier(TrimmedName));
+
+            var typeSyntax = Type.BuildTypeSyntax();
+
+            syntax = syntax.WithType(
+                this is { Required: false, Type.Type: JsonSchemaPrimitiveType.Object }
+                    ? SyntaxFactory.NullableType(typeSyntax)
+                    : typeSyntax
+            );
+
+            if (Type.Default is not null)
+            {
+                // デフォルト値の設定。わからないときは default(T) になるようにしておく。
+                // でもnullなほうがいいかもしれない？
+                // コンパイルできることが目標じゃないので、まあいいかとなってる
+                syntax = syntax.WithDefault(
+                    SyntaxFactory.EqualsValueClause(
+                        SyntaxFactory.LiteralExpression(
+                            SyntaxKind.DefaultLiteralExpression,
+                            Type.Type switch
+                            {
+                                // Primitive型はJsonElementから値がそのまま取り出せるので、それを使う感じ。
+                                JsonSchemaPrimitiveType.Integer
+                                    => SyntaxFactory.Literal(Type.Default?.GetInt32() ?? 0),
+                                JsonSchemaPrimitiveType.Number
+                                    => SyntaxFactory.Literal(Type.Default?.GetDecimal() ?? 0M),
+                                JsonSchemaPrimitiveType.Boolean
+                                    //なんかこの式つらくない？
+                                    => Type.Default?.GetBoolean() ?? false
+                                        ? SyntaxFactory.Token(SyntaxKind.TrueLiteralExpression)
+                                        : SyntaxFactory.Token(SyntaxKind.FalseLiteralExpression),
+                                JsonSchemaPrimitiveType.String
+                                    => SyntaxFactory.Literal(Type.Default?.GetString() ?? ""),
+                                // プリミティブ型じゃない場合は = defaultになる
+                                _ => SyntaxFactory.Token(SyntaxKind.DefaultExpression)
+                            }
+                        )
+                    )
                 );
+            }
+            return syntax;
+        }
+
+        /// <summary>
+        /// この引数に対応するXMLのparamタグを作って返す
+        /// </summary>
+        /// <returns></returns>
+        public XmlElementSyntax BuildParamCommentSyntax()
+        {
+            var xmlCommentSyntax = SyntaxFactory.XmlParamElement(
+                TrimmedName,
+                new SyntaxList<XmlNodeSyntax>(
+                    SyntaxFactory
+                        .XmlText()
+                        .WithTextTokens(
+                            SyntaxFactory.TokenList(
+                                SyntaxFactory.XmlTextLiteral(
+                                    SyntaxFactory.TriviaList(),
+                                    Type.Description ?? "",
+                                    Type.Description ?? "",
+                                    SyntaxFactory.TriviaList()
+                                )
+                            )
+                        )
+                )
+            );
+
+            return xmlCommentSyntax;
         }
     }
 
@@ -37,61 +101,39 @@ public class Method
     }
 
     public IEnumerable<Argument> Arguments { get; init; } = Enumerable.Empty<Argument>();
-    public JsonElement Returns { get; init; } = default;
+    public JsonSchemaType? Returns { get; init; } = null;
     public MethodDeclareType DeclareType { get; init; } = MethodDeclareType.Unknown;
     public string Name { get; init; } = string.Empty;
 
     /// <summary>
-    /// 戻り値の型を得る。nullならvoid
+    /// 引数部分の構文木を作って返す
     /// </summary>
-    public JsonSchemaType? ReturnsJsonSchemaType =>
-        Returns.GetRawText() == "void"
-            ? null
-            : JsonSerializer.Deserialize<JsonSchemaType>(
-                Returns.GetRawText(),
-                new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }
-            );
-
+    /// <returns></returns>
     private ParameterListSyntax BuildParameterListSyntax()
     {
         return SyntaxFactory.ParameterList(
             SyntaxFactory.SeparatedList(
-                Arguments.Select(x =>
-                {
-                    var syntax = x.BuildParameterSyntax();
-                    if (x.Required)
-                        return syntax;
-                    return syntax.WithDefault(
-                        SyntaxFactory.EqualsValueClause(
-                            SyntaxFactory.LiteralExpression(SyntaxKind.NullLiteralExpression)
-                        )
-                    );
-                })
+                Arguments.Select(argument => argument.BuildParameterSyntax())
             )
         );
     }
 
-    public TypeSyntax BuildReturnTypeSyntax()
-    {
-        var rawText = Returns.GetRawText();
-        if (rawText == "void")
-            return SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.VoidKeyword));
-
-        var jsonSchemaType = JsonSerializer.Deserialize<JsonSchemaType>(
-            rawText,
-            new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }
-        );
-
-        return jsonSchemaType?.BuildTypeSyntax()
-            ?? SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.VoidKeyword));
-    }
-
-    public MethodDeclarationSyntax BuildMethodSyntaxDeclarationSyntax()
+    /// <summary>
+    /// このメソッドの構文木を作って返す
+    /// </summary>
+    /// <returns></returns>
+    public MethodDeclarationSyntax BuildMethodDeclarationSyntax()
     {
         var method = SyntaxFactory
-            .MethodDeclaration(BuildReturnTypeSyntax(), Name)
+            .MethodDeclaration(
+                Returns is null
+                    ? SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.VoidKeyword))
+                    : Returns.BuildTypeSyntax(),
+                Name
+            )
             .WithParameterList(BuildParameterListSyntax())
             .WithBody(
+                // 実装まではさすがに移せないので、NotImplementedExceptionを投げるだけにしている
                 SyntaxFactory.Block(
                     SyntaxFactory.ThrowStatement(
                         SyntaxFactory.ObjectCreationExpression(
@@ -102,9 +144,55 @@ public class Method
             )
             .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword)));
 
+        // コメント部分ここから
+        var xmlCommentTriviaList = new List<SyntaxTrivia>
+        {
+            // 空っぽのSummaryタグ。無くてもいい
+            SyntaxFactory.Trivia(
+                SyntaxFactory.DocumentationComment(
+                    SyntaxFactory.XmlSummaryElement(SyntaxFactory.XmlText(""))
+                )
+            )
+        };
+        // paramタグのリスト
+        xmlCommentTriviaList.AddRange(
+            Arguments.Select(
+                arg =>
+                    SyntaxFactory.Trivia(
+                        SyntaxFactory.DocumentationComment(arg.BuildParamCommentSyntax())
+                    )
+            )
+        );
+
+        // returnsタグ。最後の改行を含む
+        xmlCommentTriviaList.Add(
+            SyntaxFactory.Trivia(
+                SyntaxFactory.DocumentationComment(
+                    SyntaxFactory.XmlReturnsElement(
+                        SyntaxFactory.XmlText(Returns?.Description ?? "")
+                    ),
+                    SyntaxFactory
+                        .XmlText()
+                        .WithTextTokens(
+                            SyntaxFactory.TokenList(
+                                SyntaxFactory.XmlTextNewLine(
+                                    SyntaxFactory.TriviaList(),
+                                    Environment.NewLine,
+                                    Environment.NewLine,
+                                    SyntaxFactory.TriviaList()
+                                )
+                            )
+                        )
+                )
+            )
+        );
+
+        method = method.WithLeadingTrivia(xmlCommentTriviaList);
+
         if (
             DeclareType
             is MethodDeclareType.Override
+                // After, Before, Around ってオーバーライドと言えるかは怪しいけど、他に表せそうなのもなく…。
                 or MethodDeclareType.After
                 or MethodDeclareType.Before
                 or MethodDeclareType.Around

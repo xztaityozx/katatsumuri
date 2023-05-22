@@ -1,6 +1,7 @@
 using System.Data;
 using System.Text.Json;
 using Katatsumuri.Result;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NJsonSchema;
@@ -29,6 +30,7 @@ public record CSharp(FileInfo PackageSchemaFile)
             GenerateJsonMethods = false,
             JsonLibrary = CSharpJsonLibrary.SystemTextJson,
             Namespace = string.Join(".", package.Namespace),
+            ArrayType = "IEnumerable",
         };
 
         var schema = await JsonSchema.FromJsonAsync(package.Schema.GetRawText());
@@ -44,8 +46,9 @@ public record CSharp(FileInfo PackageSchemaFile)
             classWalker.ClassDeclarationSyntax ?? throw new NoNullAllowedException();
 
         return package.Methods
-            .Select(x => x.BuildMethodSyntaxDeclarationSyntax())
-            .Aggregate(classDeclarationSyntax, (current, method) => current.AddMembers(method));
+            .Select(method => method.BuildMethodDeclarationSyntax())
+            .Aggregate(classDeclarationSyntax, (current, method) => current.AddMembers(method))
+            .NormalizeWhitespace(eol: Environment.NewLine);
     }
 
     private sealed class ClassWalker : CSharpSyntaxWalker

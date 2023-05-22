@@ -24,7 +24,7 @@ public class JsonSchemaType
     {
         if (Const is not null)
         {
-            return Type?.ToTypeString()
+            return Type?.ToTypeSyntax()
                 ?? SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.ObjectKeyword));
         }
 
@@ -49,7 +49,8 @@ public class JsonSchemaType
         )
             return SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.ObjectKeyword));
 
-        return SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.ObjectKeyword));
+        return Type?.ToTypeSyntax()
+            ?? SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.ObjectKeyword));
     }
 }
 
@@ -68,7 +69,13 @@ public enum JsonSchemaPrimitiveType
 
 public static class JsonSchemaPrimitiveTypeExtension
 {
-    public static TypeSyntax ToTypeString(this JsonSchemaPrimitiveType type) =>
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    public static TypeSyntax ToTypeSyntax(this JsonSchemaPrimitiveType type) =>
         SyntaxFactory.PredefinedType(
             SyntaxFactory.Token(
                 type switch
