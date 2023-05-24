@@ -1,10 +1,9 @@
-using System.Text.Json;
 using Katatsumuri.CodeGeneration;
-using Katatsumuri.Result;
 
 var packageSchemaFile = new FileInfo(@"./schema.json");
 
 var csharp = new CSharp(packageSchemaFile);
 var syntaxTree = await csharp.BuildAsync();
 
-Console.WriteLine(syntaxTree.ToString());
+await using var writer = new StreamWriter(@"./out.cs");
+syntaxTree.WriteTo(writer);

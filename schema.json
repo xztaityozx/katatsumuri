@@ -1,0 +1,195 @@
+{
+   "methods" : [
+      {
+         "arguments" : [],
+         "declare_type" : "sub",
+         "name" : "a",
+         "returns" : {
+            "const" : 10
+         }
+      },
+      {
+         "arguments" : [
+            {
+               "name" : "str",
+               "required" : true,
+               "type" : {
+                  "description" : "original Perl type: Str",
+                  "type" : "string"
+               }
+            },
+            {
+               "name" : "x",
+               "required" : true,
+               "type" : {
+                  "description" : "original Perl type: Any",
+                  "type" : "any"
+               }
+            },
+            {
+               "name" : "y",
+               "required" : true,
+               "type" : {
+                  "default" : 1,
+                  "description" : "original Perl type: Int",
+                  "type" : "integer"
+               }
+            }
+         ],
+         "declare_type" : "sub",
+         "name" : "e",
+         "returns" : {
+            "const" : 10
+         }
+      },
+      {
+         "arguments" : [],
+         "declare_type" : "sub",
+         "name" : "f",
+         "returns" : {
+            "anyOf" : [
+               {
+                  "type" : "string"
+               },
+               {
+                  "type" : "integer"
+               }
+            ],
+            "description" : "original Perl type: Str, Int"
+         }
+      },
+      {
+         "arguments" : [],
+         "declare_type" : "sub",
+         "name" : "g",
+         "returns" : null
+      },
+      {
+         "arguments" : [
+            {
+               "name" : "$a",
+               "required" : true,
+               "type" : {
+                  "description" : "original Perl type: Any",
+                  "type" : "any"
+               }
+            }
+         ],
+         "declare_type" : "sub",
+         "name" : "h",
+         "returns" : {
+            "const" : 1
+         }
+      },
+      {
+         "arguments" : [],
+         "declare_type" : "fun",
+         "name" : "b",
+         "returns" : {
+            "description" : "original Perl type: Int",
+            "type" : "integer"
+         }
+      },
+      {
+         "arguments" : [],
+         "declare_type" : "method",
+         "name" : "c",
+         "returns" : {
+            "description" : "original Perl type: Int",
+            "type" : "integer"
+         }
+      },
+      {
+         "arguments" : [
+            {
+               "name" : "$str",
+               "required" : true,
+               "type" : {
+                  "description" : "original Perl type: Str",
+                  "type" : "string"
+               }
+            },
+            {
+               "name" : "$x",
+               "required" : true,
+               "type" : {
+                  "description" : "original Perl type: Any",
+                  "type" : "any"
+               }
+            },
+            {
+               "name" : "$y",
+               "required" : false,
+               "type" : {
+                  "description" : "original Perl type: Int",
+                  "type" : "integer"
+               }
+            }
+         ],
+         "declare_type" : "method",
+         "name" : "d",
+         "returns" : {
+            "const" : 10
+         }
+      }
+   ],
+   "name" : "B",
+   "namespace" : [
+      "My",
+      "Namespace"
+   ],
+   "schema" : {
+      "$schema" : "https://json-schema.org/draft/2020-12/schema",
+      "properties" : {
+         "age" : {
+            "description" : "original Perl type: Int",
+            "readOnly" : true,
+            "type" : "integer"
+         },
+         "dict" : {
+            "description" : "original Perl type: Dict[age=>Int,name=>Str]",
+            "properties" : {
+               "age" : {
+                  "type" : "integer"
+               },
+               "name" : {
+                  "type" : "string"
+               }
+            },
+            "readOnly" : true,
+            "required" : [
+               "name",
+               "age"
+            ],
+            "type" : "object"
+         },
+         "name" : {
+            "default" : "this is name",
+            "description" : "original Perl type: Str",
+            "readOnly" : true,
+            "type" : "string"
+         },
+         "union" : {
+            "anyOf" : [
+               {
+                  "type" : "string"
+               },
+               {
+                  "type" : "integer"
+               }
+            ],
+            "description" : "original Perl type: Str|Int",
+            "readOnly" : true
+         }
+      },
+      "required" : [
+         "name",
+         "age",
+         "union",
+         "dict"
+      ],
+      "title" : "B",
+      "type" : "object"
+   },
+   "super_classes" : []
+}
