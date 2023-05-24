@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -137,7 +136,13 @@ public class Method
                 SyntaxFactory.Block(
                     SyntaxFactory.ThrowStatement(
                         SyntaxFactory.ObjectCreationExpression(
-                            SyntaxFactory.IdentifierName(nameof(NotImplementedException))
+                            SyntaxFactory.ParseTypeName(nameof(NotImplementedException)),
+                            SyntaxFactory.ArgumentList(
+                                SyntaxFactory.Token(SyntaxKind.OpenParenToken),
+                                new SeparatedSyntaxList<ArgumentSyntax>(),
+                                SyntaxFactory.Token(SyntaxKind.CloseParenToken)
+                            ),
+                            null
                         )
                     )
                 )

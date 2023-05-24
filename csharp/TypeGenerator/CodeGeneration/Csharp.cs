@@ -15,7 +15,7 @@ public record CSharp(FileInfo PackageSchemaFile)
     /// Packageのスキーマ情報を解析して、C#のコードを生成。そのシンタックスツリーを返す
     /// </summary>
     /// <returns></returns>
-    public async Task<ClassDeclarationSyntax> BuildAsync()
+    public async Task<SyntaxTree> BuildAsync()
     {
         using var stream = new StreamReader(PackageSchemaFile.OpenRead());
         var package =
@@ -23,6 +23,7 @@ public record CSharp(FileInfo PackageSchemaFile)
                 await stream.ReadToEndAsync(),
                 new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }
             ) ?? throw new NoNullAllowedException();
+
         var csharpGeneratorSetting = new CSharpGeneratorSettings
         {
             ClassStyle = CSharpClassStyle.Poco,
@@ -30,44 +31,29 @@ public record CSharp(FileInfo PackageSchemaFile)
             GenerateJsonMethods = false,
             JsonLibrary = CSharpJsonLibrary.SystemTextJson,
             Namespace = string.Join(".", package.Namespace),
-            ArrayType = "IEnumerable",
+            ArrayType = "IEnumerable"
         };
-
         var schema = await JsonSchema.FromJsonAsync(package.Schema.GetRawText());
-
         var csharpGenerator = new CSharpGenerator(schema, csharpGeneratorSetting);
         var file = csharpGenerator.GenerateFile() ?? throw new FileNotFoundException();
+
         using var reader = new StringReader(file);
         var syntaxTree = CSharpSyntaxTree.ParseText(await reader.ReadToEndAsync());
-        var classWalker = new ClassWalker(package.Name);
-        classWalker.Visit(await syntaxTree.GetRootAsync());
+        var root = await syntaxTree.GetRootAsync();
+        var targetClassDeclarationSyntax =
+            root.DescendantNodes()
+                .OfType<ClassDeclarationSyntax>()
+                .FirstOrDefault(syntax => syntax.Identifier.ValueText == package.Name)
+            ?? throw new NoNullAllowedException($"{package.Name} が見つかりませんでした");
 
-        var classDeclarationSyntax =
-            classWalker.ClassDeclarationSyntax ?? throw new NoNullAllowedException();
-
-        return package.Methods
+        var newClassDeclarationSyntax = package.Methods
             .Select(method => method.BuildMethodDeclarationSyntax())
-            .Aggregate(classDeclarationSyntax, (current, method) => current.AddMembers(method))
-            .NormalizeWhitespace(eol: Environment.NewLine);
-    }
+            .Aggregate(
+                targetClassDeclarationSyntax,
+                (current, method) => current.AddMembers(method)
+            );
 
-    private sealed class ClassWalker : CSharpSyntaxWalker
-    {
-        private string ClassName { get; }
-        public ClassDeclarationSyntax? ClassDeclarationSyntax { get; private set; }
-
-        public ClassWalker(string className)
-        {
-            ClassName = className;
-        }
-
-        public override void VisitClassDeclaration(ClassDeclarationSyntax node)
-        {
-            if (node.Identifier.ValueText == ClassName)
-            {
-                ClassDeclarationSyntax = node;
-            }
-            base.VisitClassDeclaration(node);
-        }
+        var newRoot = root.ReplaceNode(targetClassDeclarationSyntax, newClassDeclarationSyntax);
+        return syntaxTree.WithRootAndOptions(newRoot, syntaxTree.Options);
     }
 }
