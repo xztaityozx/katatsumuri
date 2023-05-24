@@ -10,7 +10,7 @@ type MethodSchema,
   as Dict [
     name         => Str,
     arguments    => ArrayRef [HashRef],
-    returns      => Enum ["void"] | HashRef,
+    returns      => HashRef | Undef,
     declare_type => DeclareType,
   ];
 type DeclareType, as Enum ["fun", "method", "override", "around", "before", "after", "sub", "unknown"];
@@ -31,7 +31,7 @@ has declare_type => (is => 'ro', isa => DeclareType, required => 1);
 # でも型を表す部分だけJSON Schemaに準拠してる。
 method to_schema ($class :) : Return(MethodSchema) {
     return +{
-          returns => Undef->check($class->returns) ? 'void'
+          returns => Undef->check($class->returns) ? undef
         : Undef->check($class->returns->default) ? $class->returns->to_json_schema
         : +{ const => $class->returns->default },
         declare_type => $class->declare_type,
